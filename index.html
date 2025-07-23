@@ -2,17 +2,44 @@
 <html lang="pl">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Moje Filmy</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Live Video z Google Drive</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="container">
-    <h1>Testowe Widelo</h1>
-    <video controls>
-      <source src="test.mp4" type="video/mp4" />
-      Twoja przeglądarka nie obsługuje odtwarzacza wideo.
-    </video>
+    <h1>Live stream 🎥</h1>
+    <video id="liveVideo" autoplay muted playsinline></video>
   </div>
+
+  <script>
+    const video = document.getElementById('liveVideo');
+
+    // Link do pliku video z Google Drive - wklej ID pliku
+    const fileId = '1xxcF79zj-oSrYQ7hveCxHKMZhdcmrHU_'; 
+    const videoUrl = `https://drive.usercontent.google.com/download?id=1xxcF79zj-oSrYQ7hveCxHKMZhdcmrHU_&export=download&authuser=0`;
+
+    video.src = videoUrl;
+
+    video.controls = false;
+    video.disablePictureInPicture = true;
+
+    // Start emisji o stałej godzinie, np. 12:00
+    const startTime = new Date();
+    startTime.setHours(12, 0, 0, 0);
+
+    video.addEventListener('loadedmetadata', () => {
+      const now = new Date();
+      const secondsSinceStart = Math.floor((now - startTime) / 1000);
+      const duration = Math.floor(video.duration);
+
+      video.currentTime = secondsSinceStart % duration;
+    });
+
+    video.loop = true;
+
+    video.addEventListener('contextmenu', e => e.preventDefault());
+    video.addEventListener('keydown', e => e.preventDefault());
+  </script>
 </body>
 </html>
