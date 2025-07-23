@@ -70,7 +70,6 @@
     #sendBtn:hover {
       background-color: #267326;
     }
-    /* Wyświetlanie nicku w prawym górnym rogu */
     #userNickDisplay {
       position: fixed;
       top: 10px;
@@ -139,7 +138,7 @@
 
     function addMessageToChat(nick, text) {
       const msgDiv = document.createElement('div');
-      const time = new Date().toLocaleTimeString();
+      const time = new Date(msg.timestamp).toLocaleTimeString();
       msgDiv.textContent = `[${time}] ${nick}: ${text}`;
       chat.appendChild(msgDiv);
       chat.scrollTop = chat.scrollHeight;
