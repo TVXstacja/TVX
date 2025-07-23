@@ -3,154 +3,140 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Forum TVX - Chat na żywo</title>
+  <title>Forum Chat TVX</title>
   <style>
     body {
-      font-family: Tahoma, sans-serif;
       background: #99ff66;
-      color: #000;
+      font-family: Tahoma, sans-serif;
       margin: 0; padding: 0;
+      color: #000;
       display: flex;
       flex-direction: column;
       align-items: center;
     }
     .wrapper {
-      max-width: 600px;
+      max-width: 800px;
       width: 100%;
+      margin-top: 30px;
       background: #fff;
       border: 4px solid #339933;
       box-shadow: 0 0 15px #333;
-      margin: 20px;
       padding: 20px;
-      border-radius: 8px;
       display: flex;
       flex-direction: column;
-      height: 80vh;
+      height: 600px;
     }
-    #messages {
+    h1 {
+      margin: 0 0 15px 0;
+      color: #006600;
+      text-align: center;
+    }
+    #chat {
       flex-grow: 1;
-      overflow-y: auto;
       border: 2px solid #339933;
       padding: 10px;
-      margin-bottom: 10px;
       background: #f0fff0;
-      border-radius: 5px;
+      overflow-y: auto;
+      margin-bottom: 10px;
+      font-size: 16px;
     }
-    #messages div {
+    #chat div {
       margin-bottom: 8px;
-      padding: 6px;
-      border-radius: 5px;
     }
-    #messages .user {
-      font-weight: bold;
-      color: #006600;
-    }
-    #messages .text {
-      margin-left: 8px;
-      display: inline-block;
-    }
-    form {
+    #inputArea {
       display: flex;
+      gap: 10px;
     }
-    input[type="text"] {
+    #msgInput {
       flex-grow: 1;
-      padding: 10px;
+      padding: 8px;
       font-size: 16px;
       border: 2px solid #339933;
-      border-radius: 5px 0 0 5px;
-      outline: none;
+      border-radius: 4px;
     }
-    button {
-      background: #339933;
-      color: white;
+    #sendBtn {
+      background-color: #339933;
       border: none;
-      padding: 10px 20px;
+      color: white;
+      padding: 10px 16px;
+      font-size: 16px;
       font-weight: bold;
       cursor: pointer;
-      border-radius: 0 5px 5px 0;
+      border-radius: 4px;
     }
-    button:hover {
-      background: #26732a;
-    }
-    #loggedUser {
-      align-self: flex-end;
-      margin-bottom: 10px;
-      font-weight: bold;
-      color: #006600;
+    #sendBtn:hover {
+      background-color: #267326;
     }
   </style>
 </head>
 <body>
+
   <div class="wrapper">
-    <div id="loggedUser"></div>
-    <div id="messages"></div>
-    <form id="messageForm">
-      <input type="text" id="messageInput" placeholder="Napisz wiadomość..." autocomplete="off" required />
-      <button type="submit">Wyślij</button>
-    </form>
+    <h1>Forum TVX - Czatuj z nami!</h1>
+    <div id="chat"></div>
+
+    <div id="inputArea">
+      <input type="text" id="msgInput" placeholder="Napisz wiadomość..." autocomplete="off" />
+      <button id="sendBtn">Wyślij</button>
+    </div>
   </div>
 
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
   <script>
+    
     const firebaseConfig = {
-      apiKey: "TWOJE_API_KEY",
-      authDomain: "TWOJ_PROJEKT.firebaseapp.com",
-      databaseURL: "https://TWOJ_PROJEKT-default-rtdb.firebaseio.com",
-      projectId: "TWOJ_PROJEKT",
-      storageBucket: "TWOJ_PROJEKT.appspot.com",
-      messagingSenderId: "NUMER_SENDER_ID",
-      appId: "ID_APLIKACJI"
+      apiKey: "AIzaSyCuUHUoCqB7M2uPdeK-ex1EIajS8hipzl8",
+      authDomain: "tvx-forum.firebaseapp.com",
+      databaseURL: "https://tvx-forum-default-rtdb.firebaseio.com",
+      projectId: "tvx-forum",
+      storageBucket: "tvx-forum.firebasestorage.app",
+      messagingSenderId: "258162416679",
+      appId: "1:258162416679:web:d794cd5abb04829d1b020"
     };
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
+    const messagesRef = db.ref('messages');
 
-    const userNick = localStorage.getItem('userNick') || 'Gość';
+    const chat = document.getElementById('chat');
+    const input = document.getElementById('msgInput');
+    const sendBtn = document.getElementById('sendBtn');
 
-    const loggedUserDiv = document.getElementById('loggedUser');
-    if(userNick !== 'Gość') {
-      loggedUserDiv.textContent = `Jesteś zalogowany jako: ${userNick}`;
-    } else {
-      loggedUserDiv.textContent = `Nie jesteś zalogowany`;
+    function addMessageToChat(nick, text) {
+      const msgDiv = document.createElement('div');
+      const time = new Date().toLocaleTimeString();
+      msgDiv.textContent = `[${time}] ${nick}: ${text}`;
+      chat.appendChild(msgDiv);
+      chat.scrollTop = chat.scrollHeight;
     }
 
-    const messagesDiv = document.getElementById('messages');
-    const messageForm = document.getElementById('messageForm');
-    const messageInput = document.getElementById('messageInput');
+    messagesRef.on('child_added', (snapshot) => {
+      const msg = snapshot.val();
+      addMessageToChat(msg.nick, msg.text);
+    });
 
-    function displayMessage(data) {
-      const msg = data.val();
-      const div = document.createElement('div');
-      div.innerHTML = `<span class="user">${msg.user}:</span> <span class="text">${escapeHtml(msg.text)}</span>`;
-      messagesDiv.appendChild(div);
-      messagesDiv.scrollTop = messagesDiv.scrollHeight;
-    }
+    sendBtn.addEventListener('click', () => {
+      const text = input.value.trim();
+      if (text === '') return;
 
-    function escapeHtml(text) {
-      const div = document.createElement('div');
-      div.textContent = text;
-      return div.innerHTML;
-    }
+      const nick = localStorage.getItem('userNick') || 'Gość';
 
-    db.ref('messages').on('child_added', displayMessage);
-
-    // Obsługa formularza
-    messageForm.addEventListener('submit', function(e) {
-      e.preventDefault();
-      const text = messageInput.value.trim();
-      if(text.length === 0) return;
-
-      const newMessage = {
-        user: userNick,
+      messagesRef.push({
+        nick: nick,
         text: text,
         timestamp: Date.now()
-      };
+      });
 
-      db.ref('messages').push(newMessage);
+      input.value = '';
+      input.focus();
+    });
 
-      messageInput.value = '';
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        sendBtn.click();
+      }
     });
   </script>
 </body>
