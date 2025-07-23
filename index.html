@@ -3,42 +3,26 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Live Video z Google Drive</title>
+  <title>Live Wideo</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="container">
-    <h1>TEST Z TVX</h1>
-    <video id="liveVideo" autoplay muted playsinline></video>
+    <h1>🎥 Live wideo</h1>
+    <video
+      autoplay
+      muted
+      loop
+      playsinline
+      disablepictureinpicture
+      style="width: 100%; max-width: 800px; border-radius: 12px; pointer-events: none;"
+    >
+      <source
+        src="https://drive.google.com/uc?export=download&id=1xxcF79zj-oSrYQ7hveCxHKMZhdcmrHU_"
+        type="video/mp4"
+      />
+      Twoja przeglądarka nie obsługuje odtwarzacza wideo.
+    </video>
   </div>
-
-  <script>
-    const video = document.getElementById('liveVideo');
-
-    // Link do pliku video z Google Drive - wklej ID pliku
-    const fileId = 1xxcF79zj-oSrYQ7hveCxHKMZhdcmrHU_; 
-    const videoUrl = https://drive.google.com/uc?export=download&id=1xxcF79zj-oSrYQ7hveCxHKMZhdcmrHU_;
-
-    video.src = https://drive.google.com/uc?export=download&id=1xxcF79zj-oSrYQ7hveCxHKMZhdcmrHU_;
-
-    video.controls = false;
-    video.disablePictureInPicture = true;
-
-    const startTime = new Date();
-    startTime.setHours(6, 0, 0, 0);
-
-    video.addEventListener('loadedmetadata', () => {
-      const now = new Date();
-      const secondsSinceStart = Math.floor((now - startTime) / 1000);
-      const duration = Math.floor(video.duration);
-
-      video.currentTime = secondsSinceStart % duration;
-    });
-
-    video.loop = true;
-
-    video.addEventListener('contextmenu', e => e.preventDefault());
-    video.addEventListener('keydown', e => e.preventDefault());
-  </script>
 </body>
 </html>
