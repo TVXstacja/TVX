@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <title>Zmień nazwę użytkownika</title>
+  <style>
+    body {
+      background: #f0f0f0;
+      font-family: Tahoma, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    .box {
+      background: white;
+      padding: 30px;
+      border: 2px solid #339933;
+      box-shadow: 0 0 10px #aaa;
+      border-radius: 10px;
+    }
+
+    input {
+      padding: 10px;
+      width: 250px;
+      font-size: 16px;
+      margin-top: 10px;
+      margin-bottom: 20px;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #339933;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    button:hover {
+      background-color: #267326;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="box">
+    <h2>Zmień swój nick</h2>
+    <input type="text" id="newNick" placeholder="Nowy nick" />
+    <br />
+    <button onclick="changeNick()">Zapisz</button>
+  </div>
+
+  <script>
+    function changeNick() {
+      const newNick = document.getElementById('newNick').value.trim();
+      if (!newNick) {
+        alert("Podaj nową nazwę użytkownika!");
+        return;
+      }
+
+      localStorage.setItem('userNick', newNick);
+      alert("Nick został zmieniony na: " + newNick);
+      window.location.href = "index.html"; 
+    }
+  </script>
+
+</body>
+</html>
