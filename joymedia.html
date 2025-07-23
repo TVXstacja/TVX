@@ -8,33 +8,11 @@
     body {
       margin: 0;
       padding: 0;
-      background-color: #cceeff;
+      background-color: #cceeff; /* jasnoniebieskie tło */
       font-family: Tahoma, sans-serif;
       color: #000;
-      display: flex;
-      flex-direction: row;
-    }
-
-    .content {
-      flex: 1;
-      padding: 30px;
-    }
-
-    .sidebar {
-      width: 300px;
-      background-color: #f5f5dc;
-      padding: 20px;
-      box-shadow: -2px 0 10px rgba(0, 0, 0, 0.2);
-    }
-
-    .sidebar h2 {
-      margin-top: 0;
-      color: #333;
-    }
-
-    .info {
-      font-size: 16px;
-      line-height: 1.6;
+      min-height: 100vh;
+      position: relative;
     }
 
     nav {
@@ -61,7 +39,35 @@
     }
 
     .spacer {
-      height: 50px;
+      height: 60px;
+    }
+
+    .content {
+      padding: 30px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .sidebar {
+      position: fixed;
+      bottom: 20px;
+      right: 20px; /* tutaj jest zmiana */
+      width: 260px;
+      background-color: #f5f5dc; /* beżowy */
+      padding: 15px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+      border-radius: 8px;
+    }
+
+    .sidebar h2 {
+      margin-top: 0;
+      color: #333;
+      font-size: 18px;
+    }
+
+    .info {
+      font-size: 14px;
+      line-height: 1.5;
     }
   </style>
 </head>
