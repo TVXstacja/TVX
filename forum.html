@@ -13,9 +13,8 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      position: relative;
-      min-height: 100vh;
     }
+
     .wrapper {
       max-width: 800px;
       width: 100%;
@@ -27,13 +26,15 @@
       display: flex;
       flex-direction: column;
       height: 600px;
-      box-sizing: border-box;
+      position: relative;
     }
+
     h1 {
       margin: 0 0 15px 0;
       color: #006600;
       text-align: center;
     }
+
     #chat {
       flex-grow: 1;
       border: 2px solid #339933;
@@ -43,13 +44,16 @@
       margin-bottom: 10px;
       font-size: 16px;
     }
+
     #chat div {
       margin-bottom: 8px;
     }
+
     #inputArea {
       display: flex;
       gap: 10px;
     }
+
     #msgInput {
       flex-grow: 1;
       padding: 8px;
@@ -57,6 +61,7 @@
       border: 2px solid #339933;
       border-radius: 4px;
     }
+
     #sendBtn {
       background-color: #339933;
       border: none;
@@ -67,31 +72,36 @@
       cursor: pointer;
       border-radius: 4px;
     }
+
     #sendBtn:hover {
       background-color: #267326;
     }
-    /* Wyświetlanie nicku w prawym górnym rogu */
-    #userNickDisplay {
-      position: fixed;
-      top: 10px;
-      right: 10px;
-      background: #339933;
+
+    #backBtn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background-color: #339933;
       color: white;
-      padding: 6px 12px;
+      padding: 8px 14px;
+      border: none;
       font-weight: bold;
-      border-radius: 4px;
-      font-family: Tahoma, sans-serif;
-      user-select: none;
-      z-index: 1000;
+      border-radius: 5px;
+      cursor: pointer;
+      box-shadow: 0 0 5px #333;
+    }
+
+    #backBtn:hover {
+      background-color: #267326;
     }
   </style>
 </head>
 <body>
 
-  <div id="userNickDisplay" title="Twój nick">—</div>
-
   <div class="wrapper">
     <h1>Forum TVX - Czatuj z nami!</h1>
+    <button id="backBtn" onclick="location.href='index.html'">Powrót do Strony Głównej</button>
+
     <div id="chat"></div>
 
     <div id="inputArea">
@@ -101,57 +111,57 @@
   </div>
 
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyCuUHUoCqB7M2uPdeK-ex1EIajS8hipzl8",
-    authDomain: "tvx-forum.firebaseapp.com",
-    databaseURL: "https://tvx-forum-default-rtdb.firebaseio.com",
-    projectId: "tvx-forum",
-    storageBucket: "tvx-forum.firebasestorage.app",
-    messagingSenderId: "258162416679",
-    appId: "1:258162416679:web:d794cd5abb04829d1b020"
-  };
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCuUHUoCqB7M2uPdeK-ex1EIajS8hipzl8",
+      authDomain: "tvx-forum.firebaseapp.com",
+      databaseURL: "https://tvx-forum-default-rtdb.firebaseio.com",
+      projectId: "tvx-forum",
+      storageBucket: "tvx-forum.firebasestorage.app",
+      messagingSenderId: "258162416679",
+      appId: "1:258162416679:web:d794cd5abb04829d1b020"
+    };
 
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
-  const messagesRef = db.ref('messages');
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const messagesRef = db.ref('messages');
 
-  const chat = document.getElementById('chat');
-  const input = document.getElementById('msgInput');
-  const sendBtn = document.getElementById('sendBtn');
+    const chat = document.getElementById('chat');
+    const input = document.getElementById('msgInput');
+    const sendBtn = document.getElementById('sendBtn');
 
-  messagesRef.on('child_added', (snapshot) => {
-    const msg = snapshot.val();
-    const msgDiv = document.createElement('div');
-    const time = new Date(msg.timestamp).toLocaleTimeString(); // użycie timestamp z Firebase
-    msgDiv.textContent = `[${time}] ${msg.nick}: ${msg.text}`;
-    chat.appendChild(msgDiv);
-    chat.scrollTop = chat.scrollHeight;
-  });
-
-  sendBtn.addEventListener('click', () => {
-    const text = input.value.trim();
-    if (text === '') return;
-
-    const nick = localStorage.getItem('userNick') || 'Gość';
-
-    messagesRef.push({
-      nick: nick,
-      text: text,
-      timestamp: Date.now()
+    messagesRef.on('child_added', (snapshot) => {
+      const msg = snapshot.val();
+      const msgDiv = document.createElement('div');
+      const time = new Date(msg.timestamp).toLocaleTimeString(); // Poprawna godzina
+      msgDiv.textContent = `[${time}] ${msg.nick}: ${msg.text}`;
+      chat.appendChild(msgDiv);
+      chat.scrollTop = chat.scrollHeight;
     });
 
-    input.value = '';
-    input.focus();
-  });
+    sendBtn.addEventListener('click', () => {
+      const text = input.value.trim();
+      if (text === '') return;
 
-  input.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      sendBtn.click();
-    }
-  });
-</script>
+      const nick = localStorage.getItem('userNick') || 'Gość';
+
+      messagesRef.push({
+        nick: nick,
+        text: text,
+        timestamp: Date.now()
+      });
+
+      input.value = '';
+      input.focus();
+    });
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        sendBtn.click();
+      }
+    });
+  </script>
 </body>
 </html>
