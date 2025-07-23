@@ -8,7 +8,7 @@
     body {
       margin: 0;
       padding: 0;
-      background: #99ff66; 
+      background: #99ff66;
       font-family: Tahoma, Verdana, sans-serif;
       color: #000;
       text-align: center;
@@ -37,11 +37,13 @@
       padding: 10px;
       background-color: #f0fff0;
       position: relative;
+      overflow: hidden;
+      height: 450px;
     }
-    video {
+    iframe {
       width: 100%;
-      height: auto;
-      display: block;
+      height: 100%;
+      pointer-events: none;
     }
     .footer {
       margin-top: 20px;
@@ -56,13 +58,13 @@
     <p class="subtitle">Witamy w TVX 😎</p>
 
     <div class="videobox">
-      <video autoplay muted loop playsinline controls>
-        <source src="https://drive.google.com/uc?export=download&id=1xxcF79zj-oSrYQ7hveCxHKMZhdcmrHU_" type="video/mp4" />
-        Twoja przeglądarka nie obsługuje wideo.
-      </video>
+      <iframe 
+        src="https://www.youtube.com/embed/4PU0S0Yc8FM?autoplay=1&loop=1&playlist=ID_FILMU&controls=0&disablekb=1&modestbranding=1&fs=0&rel=0"
+        frameborder="0"
+        allow="autoplay"
+        allowfullscreen
+        title="Live Video"
+      ></iframe>
     </div>
 
-    <p class="footer">© Oficjalna Strona TVX • Wszelkie prawa zastrzeżone</p>
-  </div>
-</body>
-</html>
+    <p class="footer">© Oficjalna Strona TVX • Wszelkie
