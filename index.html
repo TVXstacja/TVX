@@ -19,14 +19,13 @@
     const fileId = 1xxcF79zj-oSrYQ7hveCxHKMZhdcmrHU_; 
     const videoUrl = https://drive.google.com/uc?export=download&id=1xxcF79zj-oSrYQ7hveCxHKMZhdcmrHU_;
 
-    video.src = videoUrl;
+    video.src = https://drive.google.com/uc?export=download&id=1xxcF79zj-oSrYQ7hveCxHKMZhdcmrHU_;
 
     video.controls = false;
     video.disablePictureInPicture = true;
 
-    // Start emisji o stałej godzinie, np. 12:00
     const startTime = new Date();
-    startTime.setHours(5, 0, 0, 0);
+    startTime.setHours(5, 55, 0, 0);
 
     video.addEventListener('loadedmetadata', () => {
       const now = new Date();
