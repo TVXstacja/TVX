@@ -5,18 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Strona Główna – TVX i Joy Media</title>
   <style>
-    body { 
-      background: #99ff66; 
-      font-family: Tahoma, sans-serif; 
-      margin:0; 
-      padding:0; 
-      color:#000; 
-      text-align:center; 
-    }
-    nav { 
-      background: #339933; 
-      padding: 10px; 
-    }
+    body { background: #99ff66; font-family: Tahoma, sans-serif; margin:0; padding:0; color:#000; text-align:center; }
+    nav { background: #339933; padding: 10px; }
     nav a {
       color: #fff;
       text-decoration: none;
@@ -34,15 +24,16 @@
       border: 4px solid #339933;
       box-shadow: 0 0 15px #333;
     }
-    .gif-container {
-      margin-top: 20px;
-    }
-    img.twerk-gif {
-      max-width: 100%;
-      height: auto;
-      border: 3px solid #339933;
-      border-radius: 8px;
-      box-shadow: 0 0 10px #267326;
+    #loginStatus {
+      position: fixed;
+      top: 10px;
+      right: 15px;
+      font-weight: bold;
+      color: #006600;
+      background: #e6ffe6;
+      padding: 5px 10px;
+      border-radius: 5px;
+      box-shadow: 0 0 5px #339933;
     }
   </style>
 </head>
@@ -51,20 +42,23 @@
     <a href="index.html">Strona Główna</a>
     <a href="tvx.html">TVX</a>
     <a href="joymedia.html">Joy Media</a>
+    <a href="forum.html">Forum</a>
     <a href="login.html">Logowanie</a>
   </nav>
 
   <div class="content">
     <h1>Witamy na Stronie Głównej!</h1>
-    <p>To jest główna zawartość Twojej strony czyli pusto jak na półkach w sklepie w prlu.</p>
-
-    <div class="gif-container">
-      <img 
-        src="https://media.tenor.com/v_w9R8sq3McAAAAd/among-us-twerk-yellow-ass-thang.gif" 
-        alt="Among Us Twerk GIF" 
-        class="twerk-gif"
-      />
-    </div>
+    <p>To jest główna zawartość Twojej strony czyli pusto jak na półkach w sklepie w PRL-u.</p>
   </div>
+
+  <div id="loginStatus"></div>
+
+  <script>
+    const userNick = localStorage.getItem('userNick');
+    const loginStatus = document.getElementById('loginStatus');
+    if(userNick) {
+      loginStatus.textContent = `Jesteś zalogowany jako: ${userNick}`;
+    }
+  </script>
 </body>
 </html>
