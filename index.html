@@ -12,8 +12,6 @@
       padding:0; 
       color:#000; 
       text-align:center; 
-      position: relative;
-      min-height: 100vh;
     }
     nav { 
       background: #339933; 
@@ -49,17 +47,15 @@
       z-index: 1000;
     }
     #amongusGif {
-  position: fixed;
-  bottom: 10px;
-  left: 10px;
-  width: 200px;
-  height: auto;
-  z-index: 1000;
-  pointer-events: none;
-  border: 2px solid red; 
-  background: white;  
-}
-
+      position: fixed;
+      bottom: 10px;
+      left: 10px;
+      width: 150px;
+      height: auto;
+      border: 2px solid #339933;
+      border-radius: 10px;
+      z-index: 1000;
+      background: #fff;
     }
   </style>
 </head>
@@ -79,7 +75,7 @@
 
   <div id="loginStatus"></div>
 
-  <img id="amongusGif" src="https://media.tenor.com/images/2713547a6ed25d75bc349a031f1c8550/tenor.gif" alt="Among Us Twerk Gif" />
+  <img src="głaskugłasku.gif" alt="Among Us Głasku Głasku" id="amongusGif" />
 
   <script>
     const userNick = localStorage.getItem('userNick');
