@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Forum TVX - Chat na żywo</title>
+  <style>
+    body {
+      font-family: Tahoma, sans-serif;
+      background: #99ff66;
+      color: #000;
+      margin: 0; padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .wrapper {
+      max-width: 600px;
+      width: 100%;
+      background: #fff;
+      border: 4px solid #339933;
+      box-shadow: 0 0 15px #333;
+      margin: 20px;
+      padding: 20px;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      height: 80vh;
+    }
+    #messages {
+      flex-grow: 1;
+      overflow-y: auto;
+      border: 2px solid #339933;
+      padding: 10px;
+      margin-bottom: 10px;
+      background: #f0fff0;
+      border-radius: 5px;
+    }
+    #messages div {
+      margin-bottom: 8px;
+      padding: 6px;
+      border-radius: 5px;
+    }
+    #messages .user {
+      font-weight: bold;
+      color: #006600;
+    }
+    #messages .text {
+      margin-left: 8px;
+      display: inline-block;
+    }
+    form {
+      display: flex;
+    }
+    input[type="text"] {
+      flex-grow: 1;
+      padding: 10px;
+      font-size: 16px;
+      border: 2px solid #339933;
+      border-radius: 5px 0 0 5px;
+      outline: none;
+    }
+    button {
+      background: #339933;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 0 5px 5px 0;
+    }
+    button:hover {
+      background: #26732a;
+    }
+    #loggedUser {
+      align-self: flex-end;
+      margin-bottom: 10px;
+      font-weight: bold;
+      color: #006600;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div id="loggedUser"></div>
+    <div id="messages"></div>
+    <form id="messageForm">
+      <input type="text" id="messageInput" placeholder="Napisz wiadomość..." autocomplete="off" required />
+      <button type="submit">Wyślij</button>
+    </form>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "TWOJE_API_KEY",
+      authDomain: "TWOJ_PROJEKT.firebaseapp.com",
+      databaseURL: "https://TWOJ_PROJEKT-default-rtdb.firebaseio.com",
+      projectId: "TWOJ_PROJEKT",
+      storageBucket: "TWOJ_PROJEKT.appspot.com",
+      messagingSenderId: "NUMER_SENDER_ID",
+      appId: "ID_APLIKACJI"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const userNick = localStorage.getItem('userNick') || 'Gość';
+
+    const loggedUserDiv = document.getElementById('loggedUser');
+    if(userNick !== 'Gość') {
+      loggedUserDiv.textContent = `Jesteś zalogowany jako: ${userNick}`;
+    } else {
+      loggedUserDiv.textContent = `Nie jesteś zalogowany`;
+    }
+
+    const messagesDiv = document.getElementById('messages');
+    const messageForm = document.getElementById('messageForm');
+    const messageInput = document.getElementById('messageInput');
+
+    function displayMessage(data) {
+      const msg = data.val();
+      const div = document.createElement('div');
+      div.innerHTML = `<span class="user">${msg.user}:</span> <span class="text">${escapeHtml(msg.text)}</span>`;
+      messagesDiv.appendChild(div);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    db.ref('messages').on('child_added', displayMessage);
+
+    // Obsługa formularza
+    messageForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const text = messageInput.value.trim();
+      if(text.length === 0) return;
+
+      const newMessage = {
+        user: userNick,
+        text: text,
+        timestamp: Date.now()
+      };
+
+      db.ref('messages').push(newMessage);
+
+      messageInput.value = '';
+    });
+  </script>
+</body>
+</html>
