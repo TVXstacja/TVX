@@ -60,6 +60,17 @@
       z-index: 1000;
       background: #fff;
     }
+
+    /* ✅ NOWY GIF TWERK W PRAWYM DOLNYM ROGU */
+    #twerkGif {
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      width: 120px;
+      height: auto;
+      z-index: 1000;
+      border-radius: 10px;
+    }
   </style>
 </head>
 <body>
@@ -80,6 +91,9 @@
   <div id="loginStatus"></div>
 
   <img src="głaskugłasku.gif" alt="Among Us Głasku Głasku" id="amongusGif" />
+
+  <!-- ✅ DODANY GIF TŁERK -->
+  <img src="tłerk.gif" alt="Among Us Twerk" id="twerkGif" />
 
   <script>
     const userNick = localStorage.getItem('userNick');
