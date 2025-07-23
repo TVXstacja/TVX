@@ -101,74 +101,57 @@
   </div>
 
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyCuUHUoCqB7M2uPdeK-ex1EIajS8hipzl8",
-      authDomain: "tvx-forum.firebaseapp.com",
-      databaseURL: "https://tvx-forum-default-rtdb.firebaseio.com",
-      projectId: "tvx-forum",
-      storageBucket: "tvx-forum.firebasestorage.app",
-      messagingSenderId: "258162416679",
-      appId: "1:258162416679:web:d794cd5abb04829d1b020"
-    };
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyCuUHUoCqB7M2uPdeK-ex1EIajS8hipzl8",
+    authDomain: "tvx-forum.firebaseapp.com",
+    databaseURL: "https://tvx-forum-default-rtdb.firebaseio.com",
+    projectId: "tvx-forum",
+    storageBucket: "tvx-forum.firebasestorage.app",
+    messagingSenderId: "258162416679",
+    appId: "1:258162416679:web:d794cd5abb04829d1b020"
+  };
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    const messagesRef = db.ref('messages');
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+  const messagesRef = db.ref('messages');
 
-    const chat = document.getElementById('chat');
-    const input = document.getElementById('msgInput');
-    const sendBtn = document.getElementById('sendBtn');
-    const userNickDisplay = document.getElementById('userNickDisplay');
+  const chat = document.getElementById('chat');
+  const input = document.getElementById('msgInput');
+  const sendBtn = document.getElementById('sendBtn');
 
-    // Pobierz nick z localStorage albo poproś użytkownika o wpisanie
-    function getNick() {
-      let nick = localStorage.getItem('userNick');
-      if (!nick) {
-        nick = prompt('Wpisz swój nick:', 'Gość');
-        if (!nick || nick.trim() === '') nick = 'Gość';
-        localStorage.setItem('userNick', nick);
-      }
-      return nick;
+  messagesRef.on('child_added', (snapshot) => {
+    const msg = snapshot.val();
+    const msgDiv = document.createElement('div');
+    const time = new Date(msg.timestamp).toLocaleTimeString(); // użycie timestamp z Firebase
+    msgDiv.textContent = `[${time}] ${msg.nick}: ${msg.text}`;
+    chat.appendChild(msgDiv);
+    chat.scrollTop = chat.scrollHeight;
+  });
+
+  sendBtn.addEventListener('click', () => {
+    const text = input.value.trim();
+    if (text === '') return;
+
+    const nick = localStorage.getItem('userNick') || 'Gość';
+
+    messagesRef.push({
+      nick: nick,
+      text: text,
+      timestamp: Date.now()
+    });
+
+    input.value = '';
+    input.focus();
+  });
+
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      sendBtn.click();
     }
-
-    const userNick = getNick();
-    userNickDisplay.textContent = `Nick: ${userNick}`;
-
-    function addMessageToChat(nick, text) {
-      const msgDiv = document.createElement('div');
-      const time = new Date().toLocaleTimeString();
-      msgDiv.textContent = `[${time}] ${nick}: ${text}`;
-      chat.appendChild(msgDiv);
-      chat.scrollTop = chat.scrollHeight;
-    }
-
-    messagesRef.on('child_added', (snapshot) => {
-      const msg = snapshot.val();
-      addMessageToChat(msg.nick, msg.text);
-    });
-
-    sendBtn.addEventListener('click', () => {
-      const text = input.value.trim();
-      if (text === '') return;
-
-      messagesRef.push({
-        nick: userNick,
-        text: text,
-        timestamp: Date.now()
-      });
-
-      input.value = '';
-      input.focus();
-    });
-
-    input.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        sendBtn.click();
-      }
-    });
-  </script>
+  });
+</script>
 </body>
 </html>
