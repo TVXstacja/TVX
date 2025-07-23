@@ -29,10 +29,38 @@
       position: relative;
     }
 
+    #header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    #userInfo {
+      font-weight: bold;
+      color: #006600;
+    }
+
     h1 {
-      margin: 0 0 15px 0;
+      margin: 0;
       color: #006600;
       text-align: center;
+      flex-grow: 1;
+    }
+
+    #backBtn {
+      background-color: #339933;
+      color: white;
+      padding: 8px 14px;
+      border: none;
+      font-weight: bold;
+      border-radius: 5px;
+      cursor: pointer;
+      box-shadow: 0 0 5px #333;
+    }
+
+    #backBtn:hover {
+      background-color: #267326;
     }
 
     #chat {
@@ -76,31 +104,16 @@
     #sendBtn:hover {
       background-color: #267326;
     }
-
-    #backBtn {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      background-color: #339933;
-      color: white;
-      padding: 8px 14px;
-      border: none;
-      font-weight: bold;
-      border-radius: 5px;
-      cursor: pointer;
-      box-shadow: 0 0 5px #333;
-    }
-
-    #backBtn:hover {
-      background-color: #267326;
-    }
   </style>
 </head>
 <body>
 
   <div class="wrapper">
-    <h1>Forum TVX - Czatuj z nami!</h1>
-    <button id="backBtn" onclick="location.href='index.html'">Powrót do Strony Głównej</button>
+    <div id="header">
+      <div id="userInfo"></div>
+      <h1>Forum TVX - Czatuj z nami!</h1>
+      <button id="backBtn" onclick="location.href='index.html'">Powrót</button>
+    </div>
 
     <div id="chat"></div>
 
@@ -110,6 +123,7 @@
     </div>
   </div>
 
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
@@ -119,7 +133,7 @@
       authDomain: "tvx-forum.firebaseapp.com",
       databaseURL: "https://tvx-forum-default-rtdb.firebaseio.com",
       projectId: "tvx-forum",
-      storageBucket: "tvx-forum.firebasestorage.app",
+      storageBucket: "tvx-forum.appspot.com",
       messagingSenderId: "258162416679",
       appId: "1:258162416679:web:d794cd5abb04829d1b020"
     };
@@ -131,11 +145,15 @@
     const chat = document.getElementById('chat');
     const input = document.getElementById('msgInput');
     const sendBtn = document.getElementById('sendBtn');
+    const userInfo = document.getElementById('userInfo');
+
+    const nick = localStorage.getItem('userNick') || 'Gość';
+    userInfo.textContent = `Zalogowany jako: ${nick}`;
 
     messagesRef.on('child_added', (snapshot) => {
       const msg = snapshot.val();
       const msgDiv = document.createElement('div');
-      const time = new Date(msg.timestamp).toLocaleTimeString(); // Poprawna godzina
+      const time = new Date(msg.timestamp).toLocaleTimeString();
       msgDiv.textContent = `[${time}] ${msg.nick}: ${msg.text}`;
       chat.appendChild(msgDiv);
       chat.scrollTop = chat.scrollHeight;
@@ -144,8 +162,6 @@
     sendBtn.addEventListener('click', () => {
       const text = input.value.trim();
       if (text === '') return;
-
-      const nick = localStorage.getItem('userNick') || 'Gość';
 
       messagesRef.push({
         nick: nick,
