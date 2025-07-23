@@ -13,6 +13,8 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      position: relative;
+      min-height: 100vh;
     }
     .wrapper {
       max-width: 800px;
@@ -25,6 +27,7 @@
       display: flex;
       flex-direction: column;
       height: 600px;
+      box-sizing: border-box;
     }
     h1 {
       margin: 0 0 15px 0;
@@ -67,9 +70,25 @@
     #sendBtn:hover {
       background-color: #267326;
     }
+    /* Wyświetlanie nicku w prawym górnym rogu */
+    #userNickDisplay {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background: #339933;
+      color: white;
+      padding: 6px 12px;
+      font-weight: bold;
+      border-radius: 4px;
+      font-family: Tahoma, sans-serif;
+      user-select: none;
+      z-index: 1000;
+    }
   </style>
 </head>
 <body>
+
+  <div id="userNickDisplay" title="Twój nick">—</div>
 
   <div class="wrapper">
     <h1>Forum TVX - Czatuj z nami!</h1>
@@ -85,7 +104,6 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
   <script>
-    
     const firebaseConfig = {
       apiKey: "AIzaSyCuUHUoCqB7M2uPdeK-ex1EIajS8hipzl8",
       authDomain: "tvx-forum.firebaseapp.com",
@@ -103,6 +121,21 @@
     const chat = document.getElementById('chat');
     const input = document.getElementById('msgInput');
     const sendBtn = document.getElementById('sendBtn');
+    const userNickDisplay = document.getElementById('userNickDisplay');
+
+    // Pobierz nick z localStorage albo poproś użytkownika o wpisanie
+    function getNick() {
+      let nick = localStorage.getItem('userNick');
+      if (!nick) {
+        nick = prompt('Wpisz swój nick:', 'Gość');
+        if (!nick || nick.trim() === '') nick = 'Gość';
+        localStorage.setItem('userNick', nick);
+      }
+      return nick;
+    }
+
+    const userNick = getNick();
+    userNickDisplay.textContent = `Nick: ${userNick}`;
 
     function addMessageToChat(nick, text) {
       const msgDiv = document.createElement('div');
@@ -121,10 +154,8 @@
       const text = input.value.trim();
       if (text === '') return;
 
-      const nick = localStorage.getItem('userNick') || 'Gość';
-
       messagesRef.push({
-        nick: nick,
+        nick: userNick,
         text: text,
         timestamp: Date.now()
       });
