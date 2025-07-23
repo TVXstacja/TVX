@@ -5,8 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Strona Główna – TVX i Joy Media</title>
   <style>
-    body { background: #99ff66; font-family: Tahoma, sans-serif; margin:0; padding:0; color:#000; text-align:center; }
-    nav { background: #339933; padding: 10px; }
+    body { 
+      background: #99ff66; 
+      font-family: Tahoma, sans-serif; 
+      margin:0; 
+      padding:0; 
+      color:#000; 
+      text-align:center; 
+      position: relative;
+      min-height: 100vh;
+    }
+    nav { 
+      background: #339933; 
+      padding: 10px; 
+    }
     nav a {
       color: #fff;
       text-decoration: none;
@@ -34,6 +46,16 @@
       padding: 5px 10px;
       border-radius: 5px;
       box-shadow: 0 0 5px #339933;
+      z-index: 1000;
+    }
+    #amongusGif {
+      position: fixed;
+      bottom: 10px;
+      left: 10px;
+      width: 120px;
+      height: auto;
+      z-index: 1000;
+      pointer-events: none;
     }
   </style>
 </head>
@@ -52,6 +74,8 @@
   </div>
 
   <div id="loginStatus"></div>
+
+  <img id="amongusGif" src="https://media.tenor.com/XGz6H79c3rMAAAAC/among-us-twerk-yellow-ass-thang.gif" alt="Among Us Twerk Gif" />
 
   <script>
     const userNick = localStorage.getItem('userNick');
