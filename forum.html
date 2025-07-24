@@ -170,6 +170,8 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <!-- 🔽 umieszczone tylko <script> — reszta kodu HTML pozostaje bez zmian -->
+<!-- ... cała reszta Twojego kodu HTML i CSS pozostaje bez zmian ... -->
+
 <script>
   const firebaseConfig = {
     apiKey: "AIzaSyCuUHUoCqB7M2uPdeK-ex1EIajS8hipzl8",
@@ -227,10 +229,30 @@
     });
   });
 
-  // 📬 ODBIÓR WIADOMOŚCI
+  // ======== DODANO: LISTA ZAKAZANYCH FRAZ ========
+  const bannedPhrases = [
+    "zakazanaFraza1",
+    "zakazane słowo",
+    "inny zakazany tekst"
+  ];
+
+  // 📬 ODBIÓR WIADOMOŚCI Z BLOKADĄ ZAKAZANYCH FRAZ
   messagesRef.on('child_added', (snapshot) => {
     const msg = snapshot.val();
     const key = snapshot.key;
+    const textLower = msg.text.toLowerCase();
+
+    // Sprawdzenie czy wiadomość zawiera zakazane frazy
+    const containsBanned = bannedPhrases.some(phrase =>
+      textLower.includes(phrase.toLowerCase())
+    );
+
+    if (containsBanned) {
+      // Usuwamy wiadomość natychmiast z bazy
+      messagesRef.child(key).remove();
+      return;
+    }
+
     const time = new Date(msg.timestamp).toLocaleTimeString();
 
     const msgDiv = document.createElement('div');
@@ -301,6 +323,6 @@
     if (e.key === 'Enter') sendBtn.click();
   });
 </script>
-
+  
 </body>
 </html>
