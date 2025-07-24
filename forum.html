@@ -1,30 +1,26 @@
-<html>
+<!DOCTYPE html>
 <html lang="pl">
 <head>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1033920066290470"
+     crossorigin="anonymous"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Forum Chat TVX</title>
+  <title>Forum Chat Stacja-Fikcja🤣</title>
   <style>
     body {
       background: #99ff66;
       font-family: Tahoma, sans-serif;
-      margin: 0;
-      padding: 0;
+      margin: 0; padding: 0;
+      color: #000;
       display: flex;
       flex-direction: column;
       align-items: center;
     }
 
     .wrapper {
-      display: flex;
-      max-width: 1000px;
+      max-width: 800px;
       width: 100%;
       margin-top: 30px;
-      gap: 20px;
-    }
-
-    .chatbox {
-      flex: 3;
       background: #fff;
       border: 4px solid #339933;
       box-shadow: 0 0 15px #333;
@@ -35,20 +31,38 @@
       position: relative;
     }
 
-    .sidebar {
-      flex: 1;
-      background: #f5f5dc;
-      border: 4px solid #d2b48c;
-      padding: 15px;
-      height: 600px;
-      overflow-y: auto;
-      font-size: 15px;
+    #header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    #userInfo {
+      font-weight: bold;
+      color: #006600;
     }
 
     h1 {
-      margin: 0 0 15px 0;
+      margin: 0;
       color: #006600;
       text-align: center;
+      flex-grow: 1;
+    }
+
+    #backBtn {
+      background-color: #339933;
+      color: white;
+      padding: 8px 14px;
+      border: none;
+      font-weight: bold;
+      border-radius: 5px;
+      cursor: pointer;
+      box-shadow: 0 0 5px #333;
+    }
+
+    #backBtn:hover {
+      background-color: #267326;
     }
 
     #chat {
@@ -63,26 +77,6 @@
 
     #chat div {
       margin-bottom: 8px;
-      position: relative;
-      padding-right: 25px;
-    }
-
-    .msg:hover .delete-btn {
-      display: block;
-    }
-
-    .delete-btn {
-      display: none;
-      position: absolute;
-      top: 0;
-      right: 0;
-      background: red;
-      color: white;
-      border: none;
-      cursor: pointer;
-      padding: 0 5px;
-      font-size: 14px;
-      border-radius: 3px;
     }
 
     #inputArea {
@@ -112,170 +106,80 @@
     #sendBtn:hover {
       background-color: #267326;
     }
-
-    #backBtn {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      background-color: #339933;
-      color: white;
-      padding: 8px 14px;
-      border: none;
-      font-weight: bold;
-      border-radius: 5px;
-      cursor: pointer;
-      box-shadow: 0 0 5px #333;
-    }
-
-    #backBtn:hover {
-      background-color: #267326;
-    }
-
-    .dot {
-      display: inline-block;
-      width: 10px;
-      height: 10px;
-      margin-right: 8px;
-      background-color: orange;
-      border-radius: 50%;
-    }
   </style>
 </head>
 <body>
 
-<div class="wrapper">
-  <div class="chatbox">
-    <h1>Forum TVX – Czatuj z nami!</h1>
-    <button id="backBtn" onclick="location.href='index.html'">Powrót do Strony Głównej</button>
+  <div class="wrapper">
+    <div id="header">
+      <div id="userInfo"></div>
+      <h1>Forum Chat Stacja-Fikcja🤣</h1>
+      <button id="backBtn" onclick="location.href='index.html'">Powrót</button>
+    </div>
 
     <div id="chat"></div>
 
     <div id="inputArea">
       <input type="text" id="msgInput" placeholder="Napisz wiadomość..." autocomplete="off" />
-      <button id="sendBtn">Wyślij</button>
+      <button id="sendBtn">WYSYŁAJ KU</button>
     </div>
   </div>
 
-  <div class="sidebar">
-    <h3>Użytkownicy online:</h3>
-    <div id="userList"></div>
-  </div>
-</div>
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCuUHUoCqB7M2uPdeK-ex1EIajS8hipzl8",
+      authDomain: "tvx-forum.firebaseapp.com",
+      databaseURL: "https://tvx-forum-default-rtdb.firebaseio.com",
+      projectId: "tvx-forum",
+      storageBucket: "tvx-forum.appspot.com",
+      messagingSenderId: "258162416679",
+      appId: "1:258162416679:web:d794cd5abb04829d1b020"
+    };
 
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyCuUHUoCqB7M2uPdeK-ex1EIajS8hipzl8",
-    authDomain: "tvx-forum.firebaseapp.com",
-    databaseURL: "https://tvx-forum-default-rtdb.firebaseio.com",
-    projectId: "tvx-forum",
-    storageBucket: "tvx-forum.appspot.com",
-    messagingSenderId: "258162416679",
-    appId: "1:258162416679:web:d794cd5abb04829d1b020"
-  };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const messagesRef = db.ref('messages');
 
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
+    const chat = document.getElementById('chat');
+    const input = document.getElementById('msgInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const userInfo = document.getElementById('userInfo');
 
-  const messagesRef = db.ref('messages');
-  const usersRef = db.ref('usersOnline');
+    const nick = localStorage.getItem('userNick') || 'Gość';
+    userInfo.textContent = Zalogowany jako: ${nick};
 
-  const chat = document.getElementById('chat');
-  const input = document.getElementById('msgInput');
-  const sendBtn = document.getElementById('sendBtn');
-  const userNick = localStorage.getItem('userNick') || 'Gość';
-  const adminList = ['Artutmaz', 'admin', 'TVX']; // 👑 dodaj swoich adminów
-
-  // Dodaj siebie jako aktywnego
-  usersRef.child(userNick).set(true);
-  usersRef.child(userNick).onDisconnect().remove();
-
-  // Pokazuj użytkowników online
-  usersRef.on('value', (snapshot) => {
-    const userList = document.getElementById('userList');
-    userList.innerHTML = '';
-    snapshot.forEach(userSnap => {
-      const user = userSnap.key;
-      const div = document.createElement('div');
-      div.innerHTML = `<span class="dot"></span>${user}`;
-      userList.appendChild(div);
+    messagesRef.on('child_added', (snapshot) => {
+      const msg = snapshot.val();
+      const msgDiv = document.createElement('div');
+      const time = new Date(msg.timestamp).toLocaleTimeString();
+      msgDiv.textContent = [${time}] ${msg.nick}: ${msg.text};
+      chat.appendChild(msgDiv);
+      chat.scrollTop = chat.scrollHeight;
     });
-  });
 
-  // Wyświetl wiadomości
-  messagesRef.on('child_added', (snapshot) => {
-    const msg = snapshot.val();
-    const key = snapshot.key;
-    const time = new Date(msg.timestamp).toLocaleTimeString();
+    sendBtn.addEventListener('click', () => {
+      const text = input.value.trim();
+      if (text === '') return;
 
-    const msgDiv = document.createElement('div');
-    msgDiv.className = 'msg';
-    msgDiv.innerHTML = `[${time}] <strong>${msg.nick}</strong>: ${msg.text>}`;
-
-    // Dodaj przycisk usuwania jeśli właściciel lub admin
-    if (msg.nick === userNick || adminList.includes(userNick)) {
-      const delBtn = document.createElement('button');
-      delBtn.textContent = 'X';
-      delBtn.className = 'delete-btn';
-      delBtn.onclick = () => {
-        if (confirm('Na pewno usunąć tę wiadomość?')) {
-          messagesRef.child(key).remove();
-        }
-      };
-      msgDiv.appendChild(delBtn);
-    }
-
-    chat.appendChild(msgDiv);
-    chat.scrollTop = chat.scrollHeight;
-  });
-
-  // Obsługa usunięcia wiadomości
-  messagesRef.on('child_removed', (snapshot) => {
-    chat.innerHTML = ''; // odśwież
-    messagesRef.once('value', snap => {
-      snap.forEach(child => {
-        const msg = child.val();
-        const key = child.key;
-        const time = new Date(msg.timestamp).toLocaleTimeString();
-        const msgDiv = document.createElement('div');
-        msgDiv.className = 'msg';
-        msgDiv.innerHTML = `[${time}] <strong>${msg.nick}</strong>: ${msg.text}`;
-
-        if (msg.nick === userNick || adminList.includes(userNick)) {
-          const delBtn = document.createElement('button');
-          delBtn.textContent = 'X';
-          delBtn.className = 'delete-btn';
-          delBtn.onclick = () => {
-            if (confirm('Usunąć tę wiadomość?')) {
-              messagesRef.child(key).remove();
-            }
-          };
-          msgDiv.appendChild(delBtn);
-        }
-
-        chat.appendChild(msgDiv);
+      messagesRef.push({
+        nick: nick,
+        text: text,
+        timestamp: Date.now()
       });
-    });
-  });
 
-  // Wysyłanie wiadomości
-  sendBtn.addEventListener('click', () => {
-    const text = input.value.trim();
-    if (text === '') return;
-    messagesRef.push({
-      nick: userNick,
-      text: text,
-      timestamp: Date.now()
+      input.value = '';
+      input.focus();
     });
-    input.value = '';
-    input.focus();
-  });
 
-  input.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') sendBtn.click();
-  });
-</script>
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        sendBtn.click();
+      }
+    });
+  </script>
 </body>
 </html>
