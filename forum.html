@@ -11,18 +11,13 @@
       margin: 0; padding: 0;
       color: #000;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
+      align-items: center;
     }
-
     .wrapper {
-      display: flex;
-      max-width: 1000px;
+      max-width: 800px;
       width: 100%;
       margin-top: 30px;
-    }
-
-    .chatbox {
-      flex: 3;
       background: #fff;
       border: 4px solid #339933;
       box-shadow: 0 0 15px #333;
@@ -32,36 +27,22 @@
       height: 600px;
       position: relative;
     }
-
-    .sidebar {
-      flex: 1;
-      background: #f5f5dc;
-      border: 4px solid #d2b48c;
-      padding: 15px;
-      height: 600px;
-      overflow-y: auto;
-      font-size: 15px;
-    }
-
     #header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 15px;
     }
-
     #userInfo {
       font-weight: bold;
       color: #006600;
     }
-
     h1 {
       margin: 0;
       color: #006600;
       text-align: center;
       flex-grow: 1;
     }
-
     #backBtn {
       background-color: #339933;
       color: white;
@@ -72,7 +53,9 @@
       cursor: pointer;
       box-shadow: 0 0 5px #333;
     }
-
+    #backBtn:hover {
+      background-color: #267326;
+    }
     #chat {
       flex-grow: 1;
       border: 2px solid #339933;
@@ -82,36 +65,29 @@
       margin-bottom: 10px;
       font-size: 16px;
     }
-
     #chat div {
       margin-bottom: 8px;
       position: relative;
-      padding-right: 25px;
     }
-
-    .msg:hover .delete-btn {
+    .deleteBtn {
+      position: absolute;
+      right: 0;
+      top: 0;
+      background: red;
+      color: #fff;
+      border: none;
+      border-radius: 3px;
+      font-size: 10px;
+      cursor: pointer;
+      display: none;
+    }
+    #chat div:hover .deleteBtn {
       display: block;
     }
-
-    .delete-btn {
-      display: none;
-      position: absolute;
-      top: 0;
-      right: 0;
-      background: red;
-      color: white;
-      border: none;
-      cursor: pointer;
-      padding: 0 5px;
-      font-size: 14px;
-      border-radius: 3px;
-    }
-
     #inputArea {
       display: flex;
       gap: 10px;
     }
-
     #msgInput {
       flex-grow: 1;
       padding: 8px;
@@ -119,7 +95,6 @@
       border: 2px solid #339933;
       border-radius: 4px;
     }
-
     #sendBtn {
       background-color: #339933;
       border: none;
@@ -130,39 +105,35 @@
       cursor: pointer;
       border-radius: 4px;
     }
-
-    .dot {
-      display: inline-block;
-      width: 10px;
-      height: 10px;
-      margin-right: 8px;
-      background-color: orange;
-      border-radius: 50%;
+    #sendBtn:hover {
+      background-color: #267326;
+    }
+    #userList {
+      position: absolute;
+      right: -240px;
+      top: 0;
+      width: 220px;
+      background: #f5f5dc;
+      height: 100%;
+      padding: 10px;
+      border-left: 4px solid #339933;
+      overflow-y: auto;
     }
   </style>
 </head>
 <body>
-
   <div class="wrapper">
-    <div class="chatbox">
-      <div id="header">
-        <div id="userInfo"></div>
-        <h1>Forum Chat Stacja-Fikcja🤣</h1>
-        <button id="backBtn" onclick="location.href='index.html'">Powrót</button>
-      </div>
-
-      <div id="chat"></div>
-
-      <div id="inputArea">
-        <input type="text" id="msgInput" placeholder="Napisz wiadomość..." autocomplete="off" />
-        <button id="sendBtn">WYSYŁAJ KU</button>
-      </div>
+    <div id="header">
+      <div id="userInfo"></div>
+      <h1>Forum Chat Stacja-Fikcja🤣</h1>
+      <button id="backBtn" onclick="location.href='index.html'">Powrót</button>
     </div>
-
-    <div class="sidebar">
-      <h3>Online:</h3>
-      <div id="userList"></div>
+    <div id="chat"></div>
+    <div id="inputArea">
+      <input type="text" id="msgInput" placeholder="Napisz wiadomość..." autocomplete="off" />
+      <button id="sendBtn">WYSYŁAJ KU</button>
     </div>
+    <div id="userList"></div>
   </div>
 
   <!-- Firebase -->
@@ -183,7 +154,9 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     const messagesRef = db.ref('messages');
-    const usersRef = db.ref('usersOnline');
+    const mutedRef = db.ref('mutedUsers');
+    const bannedRef = db.ref('bannedUsers');
+    const usersRef = db.ref('activeUsers');
 
     const chat = document.getElementById('chat');
     const input = document.getElementById('msgInput');
@@ -192,98 +165,96 @@
     const userList = document.getElementById('userList');
 
     const nick = localStorage.getItem('userNick') || 'Gość';
-    const adminList = ['Artutmaz', 'TVX', 'Klerek_'];
     userInfo.textContent = `Zalogowany jako: ${nick}`;
 
-    // Rejestracja użytkownika jako online
-    usersRef.child(nick).set(true);
-    usersRef.child(nick).onDisconnect().remove();
-
-    // Wyświetlanie użytkowników online
-    usersRef.on('value', (snapshot) => {
-      userList.innerHTML = '';
-      snapshot.forEach(userSnap => {
-        const user = userSnap.key;
-        const div = document.createElement('div');
-        div.innerHTML = `<span class="dot"></span>${user}`;
-        userList.appendChild(div);
-      });
+    // sprawdz ban
+    bannedRef.child(nick).once('value', snap => {
+      if (snap.exists()) {
+        alert("Zostałeś zbanowany.");
+        window.location.href = 'index.html';
+      }
     });
 
-    // Wyświetlanie wiadomości
+    // zapisz aktywność
+    usersRef.child(nick).set(true);
+    setTimeout(() => usersRef.child(nick).remove(), 300000); // 5 min nieaktywności
+
+    // pobierz wiadomosci
     messagesRef.on('child_added', (snapshot) => {
       const msg = snapshot.val();
-      const key = snapshot.key;
-      const time = new Date(msg.timestamp).toLocaleTimeString();
-
+      const id = snapshot.key;
       const msgDiv = document.createElement('div');
-      msgDiv.className = 'msg';
-      msgDiv.innerHTML = `[${time}] <strong>${msg.nick}</strong>: ${msg.text}`;
+      const time = new Date(msg.timestamp).toLocaleTimeString();
+      msgDiv.textContent = `[${time}] ${msg.nick}: ${msg.text}`;
 
-      // Jeśli użytkownik to autor lub admin, dodaj przycisk usuwania
-      if (msg.nick === nick || adminList.includes(nick)) {
+      // przycisk usuwania
+      if (msg.nick === nick || nick === 'Klerek_') {
         const delBtn = document.createElement('button');
-        delBtn.className = 'delete-btn';
-        delBtn.textContent = 'X';
-        delBtn.onclick = () => {
-          if (confirm('Na pewno usunąć wiadomość?')) {
-            messagesRef.child(key).remove();
-          }
-        };
+        delBtn.textContent = 'Usuń';
+        delBtn.className = 'deleteBtn';
+        delBtn.onclick = () => messagesRef.child(id).remove();
         msgDiv.appendChild(delBtn);
       }
-
       chat.appendChild(msgDiv);
       chat.scrollTop = chat.scrollHeight;
     });
 
-    // Obsługa usuwania wiadomości
-    messagesRef.on('child_removed', () => {
+    messagesRef.on('child_removed', snap => {
       chat.innerHTML = '';
-      messagesRef.once('value', snap => {
-        snap.forEach(child => {
-          const msg = child.val();
-          const key = child.key;
-          const time = new Date(msg.timestamp).toLocaleTimeString();
-          const msgDiv = document.createElement('div');
-          msgDiv.className = 'msg';
-          msgDiv.innerHTML = `[${time}] <strong>${msg.nick}</strong>: ${msg.text}`;
-
-          if (msg.nick === nick || adminList.includes(nick)) {
-            const delBtn = document.createElement('button');
-            delBtn.className = 'delete-btn';
-            delBtn.textContent = 'X';
-            delBtn.onclick = () => {
-              if (confirm('Usunąć wiadomość?')) {
-                messagesRef.child(key).remove();
-              }
-            };
-            msgDiv.appendChild(delBtn);
-          }
-
-          chat.appendChild(msgDiv);
-        });
-      });
     });
 
-    // Wysyłanie wiadomości
+    // wysylanie
     sendBtn.addEventListener('click', () => {
       const text = input.value.trim();
       if (text === '') return;
 
-      messagesRef.push({
-        nick: nick,
-        text: text,
-        timestamp: Date.now()
-      });
+      mutedRef.child(nick).once('value', snap => {
+        const mutedUntil = snap.val();
+        if (mutedUntil && Date.now() < mutedUntil) {
+          alert("Jesteś wyciszony do: " + new Date(mutedUntil).toLocaleTimeString());
+          return;
+        }
 
-      input.value = '';
-      input.focus();
+        messagesRef.push({
+          nick: nick,
+          text: text,
+          timestamp: Date.now()
+        });
+
+        input.value = '';
+        input.focus();
+      });
     });
 
     input.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') sendBtn.click();
     });
+
+    // lista uzytkownikow
+    const renderUserList = () => {
+      userList.innerHTML = '<h3>Użytkownicy</h3>';
+      db.ref('activeUsers').once('value').then(activeSnap => {
+        db.ref('mutedUsers').once('value').then(mutedSnap => {
+          const active = activeSnap.val() || {};
+          const muted = mutedSnap.val() || {};
+          const all = new Set(Object.keys(active).concat(Object.keys(muted)));
+
+          all.forEach(user => {
+            const isActive = active[user];
+            const isMuted = muted[user] && muted[user] > Date.now();
+            const statusDot = `<span style="color:${isActive ? 'orange' : 'red'}">●</span>`;
+            const muteIcon = isMuted ? ' 🔕' : '';
+
+            const div = document.createElement('div');
+            div.innerHTML = `${statusDot} ${user}${muteIcon}`;
+            userList.appendChild(div);
+          });
+        });
+      });
+    };
+
+    setInterval(renderUserList, 5000);
+    renderUserList();
   </script>
 </body>
 </html>
