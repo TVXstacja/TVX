@@ -169,121 +169,138 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyCuUHUoCqB7M2uPdeK-ex1EIajS8hipzl8",
-      authDomain: "tvx-forum.firebaseapp.com",
-      databaseURL: "https://tvx-forum-default-rtdb.firebaseio.com",
-      projectId: "tvx-forum",
-      storageBucket: "tvx-forum.appspot.com",
-      messagingSenderId: "258162416679",
-      appId: "1:258162416679:web:d794cd5abb04829d1b020"
-    };
+<!-- 🔽 umieszczone tylko <script> — reszta kodu HTML pozostaje bez zmian -->
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyCuUHUoCqB7M2uPdeK-ex1EIajS8hipzl8",
+    authDomain: "tvx-forum.firebaseapp.com",
+    databaseURL: "https://tvx-forum-default-rtdb.firebaseio.com",
+    projectId: "tvx-forum",
+    storageBucket: "tvx-forum.appspot.com",
+    messagingSenderId: "258162416679",
+    appId: "1:258162416679:web:d794cd5abb04829d1b020"
+  };
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    const messagesRef = db.ref('messages');
-    const usersRef = db.ref('usersOnline');
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+  const messagesRef = db.ref('messages');
+  const usersRef = db.ref('usersOnline');
 
-    const chat = document.getElementById('chat');
-    const input = document.getElementById('msgInput');
-    const sendBtn = document.getElementById('sendBtn');
-    const userInfo = document.getElementById('userInfo');
-    const userList = document.getElementById('userList');
+  const chat = document.getElementById('chat');
+  const input = document.getElementById('msgInput');
+  const sendBtn = document.getElementById('sendBtn');
+  const userInfo = document.getElementById('userInfo');
+  const userList = document.getElementById('userList');
 
-    const nick = localStorage.getItem('userNick') || 'Gość';
-    const adminList = ['Artutmaz', 'TVX', 'Klerek_'];
-    userInfo.textContent = `Zalogowany jako: ${nick}`;
+  const nick = localStorage.getItem('userNick') || 'Gość';
+  const adminList = ['Artutmaz', 'TVX', 'Klerek_'];
+  userInfo.textContent = `Zalogowany jako: ${nick}`;
 
-    // Rejestracja użytkownika jako online
-    usersRef.child(nick).set(true);
+  // 🔄 AKTUALIZACJA CZASU AKTYWNOŚCI CO 15 SEKUND
+  function updateActivity() {
+    usersRef.child(nick).set({ lastActive: Date.now() });
     usersRef.child(nick).onDisconnect().remove();
+  }
+  updateActivity();
+  setInterval(updateActivity, 15000);
 
-    // Wyświetlanie użytkowników online
-    usersRef.on('value', (snapshot) => {
-      userList.innerHTML = '';
-      snapshot.forEach(userSnap => {
-        const user = userSnap.key;
-        const div = document.createElement('div');
-        div.innerHTML = `<span class="dot"></span>${user}`;
-        userList.appendChild(div);
-      });
-    });
+  // 👥 WYŚWIETLANIE LISTY UŻYTKOWNIKÓW Z KOLORAMI STATUSU
+  usersRef.on('value', (snapshot) => {
+    userList.innerHTML = '';
+    const now = Date.now();
 
-    // Wyświetlanie wiadomości
-    messagesRef.on('child_added', (snapshot) => {
-      const msg = snapshot.val();
-      const key = snapshot.key;
-      const time = new Date(msg.timestamp).toLocaleTimeString();
+    snapshot.forEach(userSnap => {
+      const user = userSnap.key;
+      const lastActive = userSnap.val().lastActive || 0;
+      const inactiveTime = now - lastActive;
 
-      const msgDiv = document.createElement('div');
-      msgDiv.className = 'msg';
-      msgDiv.innerHTML = `[${time}] <strong>${msg.nick}</strong>: ${msg.text}`;
-
-      // Jeśli użytkownik to autor lub admin, dodaj przycisk usuwania
-      if (msg.nick === nick || adminList.includes(nick)) {
-        const delBtn = document.createElement('button');
-        delBtn.className = 'delete-btn';
-        delBtn.textContent = 'X';
-        delBtn.onclick = () => {
-          if (confirm('Na pewno usunąć wiadomość?')) {
-            messagesRef.child(key).remove();
-          }
-        };
-        msgDiv.appendChild(delBtn);
+      let dotColor = 'orange';
+      if (inactiveTime >= 60000) {
+        dotColor = 'red';
+      } else if (inactiveTime >= 30000) {
+        dotColor = 'blue';
       }
 
-      chat.appendChild(msgDiv);
-      chat.scrollTop = chat.scrollHeight;
+      const div = document.createElement('div');
+      div.innerHTML = `<span class="dot" style="background-color:${dotColor};"></span>${user}`;
+      userList.appendChild(div);
     });
+  });
 
-    // Obsługa usuwania wiadomości
-    messagesRef.on('child_removed', () => {
-      chat.innerHTML = '';
-      messagesRef.once('value', snap => {
-        snap.forEach(child => {
-          const msg = child.val();
-          const key = child.key;
-          const time = new Date(msg.timestamp).toLocaleTimeString();
-          const msgDiv = document.createElement('div');
-          msgDiv.className = 'msg';
-          msgDiv.innerHTML = `[${time}] <strong>${msg.nick}</strong>: ${msg.text}`;
+  // 📬 ODBIÓR WIADOMOŚCI
+  messagesRef.on('child_added', (snapshot) => {
+    const msg = snapshot.val();
+    const key = snapshot.key;
+    const time = new Date(msg.timestamp).toLocaleTimeString();
 
-          if (msg.nick === nick || adminList.includes(nick)) {
-            const delBtn = document.createElement('button');
-            delBtn.className = 'delete-btn';
-            delBtn.textContent = 'X';
-            delBtn.onclick = () => {
-              if (confirm('Usunąć wiadomość?')) {
-                messagesRef.child(key).remove();
-              }
-            };
-            msgDiv.appendChild(delBtn);
-          }
+    const msgDiv = document.createElement('div');
+    msgDiv.className = 'msg';
+    msgDiv.innerHTML = `[${time}] <strong>${msg.nick}</strong>: ${msg.text}`;
 
-          chat.appendChild(msgDiv);
-        });
+    if (msg.nick === nick || adminList.includes(nick)) {
+      const delBtn = document.createElement('button');
+      delBtn.className = 'delete-btn';
+      delBtn.textContent = 'X';
+      delBtn.onclick = () => {
+        if (confirm('Na pewno usunąć wiadomość?')) {
+          messagesRef.child(key).remove();
+        }
+      };
+      msgDiv.appendChild(delBtn);
+    }
+
+    chat.appendChild(msgDiv);
+    chat.scrollTop = chat.scrollHeight;
+  });
+
+  // ❌ USUWANIE WIADOMOŚCI
+  messagesRef.on('child_removed', () => {
+    chat.innerHTML = '';
+    messagesRef.once('value', snap => {
+      snap.forEach(child => {
+        const msg = child.val();
+        const key = child.key;
+        const time = new Date(msg.timestamp).toLocaleTimeString();
+        const msgDiv = document.createElement('div');
+        msgDiv.className = 'msg';
+        msgDiv.innerHTML = `[${time}] <strong>${msg.nick}</strong>: ${msg.text}`;
+
+        if (msg.nick === nick || adminList.includes(nick)) {
+          const delBtn = document.createElement('button');
+          delBtn.className = 'delete-btn';
+          delBtn.textContent = 'X';
+          delBtn.onclick = () => {
+            if (confirm('Usunąć wiadomość?')) {
+              messagesRef.child(key).remove();
+            }
+          };
+          msgDiv.appendChild(delBtn);
+        }
+
+        chat.appendChild(msgDiv);
       });
     });
+  });
 
-    // Wysyłanie wiadomości
-    sendBtn.addEventListener('click', () => {
-      const text = input.value.trim();
-      if (text === '') return;
+  // ✉️ WYSYŁANIE WIADOMOŚCI
+  sendBtn.addEventListener('click', () => {
+    const text = input.value.trim();
+    if (text === '') return;
 
-      messagesRef.push({
-        nick: nick,
-        text: text,
-        timestamp: Date.now()
-      });
-
-      input.value = '';
-      input.focus();
+    messagesRef.push({
+      nick: nick,
+      text: text,
+      timestamp: Date.now()
     });
 
-    input.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') sendBtn.click();
-    });
-  </script>
+    input.value = '';
+    input.focus();
+  });
+
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') sendBtn.click();
+  });
+</script>
+
 </body>
 </html>
