@@ -165,165 +165,160 @@
     </div>
   </div>
 
+  <!-- 🔊 DŹWIĘK WYSYŁANIA -->
+  <audio id="sendSound" src="send.mp3" preload="auto"></audio>
+
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
-<!-- 🔽 umieszczone tylko <script> — reszta kodu HTML pozostaje bez zmian -->
-<!-- ... cała reszta Twojego kodu HTML i CSS pozostaje bez zmian ... -->
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCuUHUoCqB7M2uPdeK-ex1EIajS8hipzl8",
+      authDomain: "tvx-forum.firebaseapp.com",
+      databaseURL: "https://tvx-forum-default-rtdb.firebaseio.com",
+      projectId: "tvx-forum",
+      storageBucket: "tvx-forum.appspot.com",
+      messagingSenderId: "258162416679",
+      appId: "1:258162416679:web:d794cd5abb04829d1b020"
+    };
 
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyCuUHUoCqB7M2uPdeK-ex1EIajS8hipzl8",
-    authDomain: "tvx-forum.firebaseapp.com",
-    databaseURL: "https://tvx-forum-default-rtdb.firebaseio.com",
-    projectId: "tvx-forum",
-    storageBucket: "tvx-forum.appspot.com",
-    messagingSenderId: "258162416679",
-    appId: "1:258162416679:web:d794cd5abb04829d1b020"
-  };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const messagesRef = db.ref('messages');
+    const usersRef = db.ref('usersOnline');
 
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
-  const messagesRef = db.ref('messages');
-  const usersRef = db.ref('usersOnline');
+    const chat = document.getElementById('chat');
+    const input = document.getElementById('msgInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const userInfo = document.getElementById('userInfo');
+    const userList = document.getElementById('userList');
 
-  const chat = document.getElementById('chat');
-  const input = document.getElementById('msgInput');
-  const sendBtn = document.getElementById('sendBtn');
-  const userInfo = document.getElementById('userInfo');
-  const userList = document.getElementById('userList');
+    const nick = localStorage.getItem('userNick') || 'Gość';
+    const adminList = ['Artutmaz', 'TVX', 'Klerek_'];
+    userInfo.textContent = `Zalogowany jako: ${nick}`;
 
-  const nick = localStorage.getItem('userNick') || 'Gość';
-  const adminList = ['Artutmaz', 'TVX', 'Klerek_'];
-  userInfo.textContent = `Zalogowany jako: ${nick}`;
-
-  // 🔄 AKTUALIZACJA CZASU AKTYWNOŚCI CO 15 SEKUND
-  function updateActivity() {
-    usersRef.child(nick).set({ lastActive: Date.now() });
-    usersRef.child(nick).onDisconnect().remove();
-  }
-  updateActivity();
-  setInterval(updateActivity, 15000);
-
-  // 👥 WYŚWIETLANIE LISTY UŻYTKOWNIKÓW Z KOLORAMI STATUSU
-  usersRef.on('value', (snapshot) => {
-    userList.innerHTML = '';
-    const now = Date.now();
-
-    snapshot.forEach(userSnap => {
-      const user = userSnap.key;
-      const lastActive = userSnap.val().lastActive || 0;
-      const inactiveTime = now - lastActive;
-
-      let dotColor = 'orange';
-      if (inactiveTime >= 60000) {
-        dotColor = 'red';
-      } else if (inactiveTime >= 30000) {
-        dotColor = 'blue';
-      }
-
-      const div = document.createElement('div');
-      div.innerHTML = `<span class="dot" style="background-color:${dotColor};"></span>${user}`;
-      userList.appendChild(div);
-    });
-  });
-
-  // ======== DODANO: LISTA ZAKAZANYCH FRAZ ========
-  const bannedPhrases = [
-    "https://pl.pornhub.com/",
-    "pornhub.com",
-    "pornhub",
-    "porn",
-  ];
-
-  // 📬 ODBIÓR WIADOMOŚCI Z BLOKADĄ ZAKAZANYCH FRAZ
-  messagesRef.on('child_added', (snapshot) => {
-    const msg = snapshot.val();
-    const key = snapshot.key;
-    const textLower = msg.text.toLowerCase();
-
-    // Sprawdzenie czy wiadomość zawiera zakazane frazy
-    const containsBanned = bannedPhrases.some(phrase =>
-      textLower.includes(phrase.toLowerCase())
-    );
-
-    if (containsBanned) {
-      // Usuwamy wiadomość natychmiast z bazy
-      messagesRef.child(key).remove();
-      return;
+    // 🔄 AKTUALIZACJA CZASU AKTYWNOŚCI
+    function updateActivity() {
+      usersRef.child(nick).set({ lastActive: Date.now() });
+      usersRef.child(nick).onDisconnect().remove();
     }
+    updateActivity();
+    setInterval(updateActivity, 15000);
 
-    const time = new Date(msg.timestamp).toLocaleTimeString();
+    // 👥 STATUSY UŻYTKOWNIKÓW
+    usersRef.on('value', (snapshot) => {
+      userList.innerHTML = '';
+      const now = Date.now();
 
-    const msgDiv = document.createElement('div');
-    msgDiv.className = 'msg';
-    msgDiv.innerHTML = `[${time}] <strong>${msg.nick}</strong>: ${msg.text}`;
+      snapshot.forEach(userSnap => {
+        const user = userSnap.key;
+        const lastActive = userSnap.val().lastActive || 0;
+        const inactiveTime = now - lastActive;
 
-    if (msg.nick === nick || adminList.includes(nick)) {
-      const delBtn = document.createElement('button');
-      delBtn.className = 'delete-btn';
-      delBtn.textContent = 'X';
-      delBtn.onclick = () => {
-        if (confirm('Na pewno usunąć wiadomość?')) {
-          messagesRef.child(key).remove();
-        }
-      };
-      msgDiv.appendChild(delBtn);
-    }
-
-    chat.appendChild(msgDiv);
-    chat.scrollTop = chat.scrollHeight;
-  });
-
-  // ❌ USUWANIE WIADOMOŚCI
-  messagesRef.on('child_removed', () => {
-    chat.innerHTML = '';
-    messagesRef.once('value', snap => {
-      snap.forEach(child => {
-        const msg = child.val();
-        const key = child.key;
-        const time = new Date(msg.timestamp).toLocaleTimeString();
-        const msgDiv = document.createElement('div');
-        msgDiv.className = 'msg';
-        msgDiv.innerHTML = `[${time}] <strong>${msg.nick}</strong>: ${msg.text}`;
-
-        if (msg.nick === nick || adminList.includes(nick)) {
-          const delBtn = document.createElement('button');
-          delBtn.className = 'delete-btn';
-          delBtn.textContent = 'X';
-          delBtn.onclick = () => {
-            if (confirm('Usunąć wiadomość?')) {
-              messagesRef.child(key).remove();
-            }
-          };
-          msgDiv.appendChild(delBtn);
+        let dotColor = 'orange';
+        if (inactiveTime >= 60000) {
+          dotColor = 'red';
+        } else if (inactiveTime >= 30000) {
+          dotColor = 'blue';
         }
 
-        chat.appendChild(msgDiv);
+        const div = document.createElement('div');
+        div.innerHTML = `<span class="dot" style="background-color:${dotColor};"></span>${user}`;
+        userList.appendChild(div);
       });
     });
-  });
 
-  // ✉️ WYSYŁANIE WIADOMOŚCI
-  sendBtn.addEventListener('click', () => {
-    const text = input.value.trim();
-    if (text === '') return;
+    // 🚫 FRAZY ZAKAZANE
+    const bannedPhrases = [
+      "https://pl.pornhub.com/",
+      "pornhub.com",
+      "pornhub",
+      "porn"
+    ];
 
-    messagesRef.push({
-      nick: nick,
-      text: text,
-      timestamp: Date.now()
+    // 📥 WYŚWIETLANIE WIADOMOŚCI
+    messagesRef.on('child_added', (snapshot) => {
+      const msg = snapshot.val();
+      const key = snapshot.key;
+      const textLower = msg.text.toLowerCase();
+
+      if (bannedPhrases.some(phrase => textLower.includes(phrase))) {
+        messagesRef.child(key).remove();
+        return;
+      }
+
+      const time = new Date(msg.timestamp).toLocaleTimeString();
+      const msgDiv = document.createElement('div');
+      msgDiv.className = 'msg';
+      msgDiv.innerHTML = `[${time}] <strong>${msg.nick}</strong>: ${msg.text}`;
+
+      if (msg.nick === nick || adminList.includes(nick)) {
+        const delBtn = document.createElement('button');
+        delBtn.className = 'delete-btn';
+        delBtn.textContent = 'X';
+        delBtn.onclick = () => {
+          if (confirm('Na pewno usunąć wiadomość?')) {
+            messagesRef.child(key).remove();
+          }
+        };
+        msgDiv.appendChild(delBtn);
+      }
+
+      chat.appendChild(msgDiv);
+      chat.scrollTop = chat.scrollHeight;
     });
 
-    input.value = '';
-    input.focus();
-  });
+    // ❌ USUWANIE WIADOMOŚCI
+    messagesRef.on('child_removed', () => {
+      chat.innerHTML = '';
+      messagesRef.once('value', snap => {
+        snap.forEach(child => {
+          const msg = child.val();
+          const key = child.key;
+          const time = new Date(msg.timestamp).toLocaleTimeString();
+          const msgDiv = document.createElement('div');
+          msgDiv.className = 'msg';
+          msgDiv.innerHTML = `[${time}] <strong>${msg.nick}</strong>: ${msg.text}`;
 
-  input.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') sendBtn.click();
-  });
-</script>
-  
+          if (msg.nick === nick || adminList.includes(nick)) {
+            const delBtn = document.createElement('button');
+            delBtn.className = 'delete-btn';
+            delBtn.textContent = 'X';
+            delBtn.onclick = () => {
+              if (confirm('Usunąć wiadomość?')) {
+                messagesRef.child(key).remove();
+              }
+            };
+            msgDiv.appendChild(delBtn);
+          }
+
+          chat.appendChild(msgDiv);
+        });
+      });
+    });
+
+    // ✉️ WYSYŁANIE WIADOMOŚCI Z DŹWIĘKIEM
+    sendBtn.addEventListener('click', () => {
+      const text = input.value.trim();
+      if (text === '') return;
+
+      messagesRef.push({
+        nick: nick,
+        text: text,
+        timestamp: Date.now()
+      });
+
+      document.getElementById('sendSound').play(); // 🔊 dźwięk wysłania
+
+      input.value = '';
+      input.focus();
+    });
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') sendBtn.click();
+    });
+  </script>
+
 </body>
 </html>
