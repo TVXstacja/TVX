@@ -19,6 +19,7 @@
       max-width: 1000px;
       width: 100%;
       margin-top: 30px;
+      position: relative;
     }
 
     .chatbox {
@@ -41,6 +42,7 @@
       height: 600px;
       overflow-y: auto;
       font-size: 15px;
+      position: relative;
     }
 
     #header {
@@ -139,12 +141,33 @@
       background-color: orange;
       border-radius: 50%;
     }
+
+    /* Kropki statusu */
+    .dot.green { background-color: #339933; } /* online aktywny */
+    .dot.blue { background-color: #3399ff; }  /* online nieaktywny */
+    .dot.red { background-color: #cc0000; }   /* offline */
+
+    /* Pasek z informacją kto pisze */
+    #typingIndicator {
+      position: absolute;
+      top: 0;
+      left: 0;
+      background-color: #cc0000;
+      color: white;
+      font-weight: bold;
+      padding: 5px 10px;
+      border-bottom-right-radius: 8px;
+      font-size: 14px;
+      z-index: 10;
+      display: none;
+    }
   </style>
 </head>
 <body>
 
   <div class="wrapper">
     <div class="chatbox">
+      <div id="typingIndicator"></div>
       <div id="header">
         <div id="userInfo"></div>
         <h1>Forum Chat Stacja-Fikcja🤣</h1>
@@ -160,13 +183,10 @@
     </div>
 
     <div class="sidebar">
-      <h3>Online:</h3>
+      <h3>Online i zarejestrowani:</h3>
       <div id="userList"></div>
     </div>
   </div>
-
-  <!-- 🔊 DŹWIĘK WYSYŁANIA -->
-  <audio id="sendSound" src="send.mp3" preload="auto"></audio>
 
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -187,18 +207,24 @@
     const db = firebase.database();
     const messagesRef = db.ref('messages');
     const usersRef = db.ref('usersOnline');
+    const registeredRef = db.ref('registeredUsers');
+    const typingRef = db.ref('typingStatus');
 
     const chat = document.getElementById('chat');
     const input = document.getElementById('msgInput');
     const sendBtn = document.getElementById('sendBtn');
     const userInfo = document.getElementById('userInfo');
     const userList = document.getElementById('userList');
+    const typingIndicator = document.getElementById('typingIndicator');
 
     const nick = localStorage.getItem('userNick') || 'Gość';
     const adminList = ['Artutmaz', 'TVX', 'Klerek_'];
     userInfo.textContent = `Zalogowany jako: ${nick}`;
 
-    // 🔄 AKTUALIZACJA CZASU AKTYWNOŚCI
+    // Dodaj użytkownika do listy zarejestrowanych
+    registeredRef.child(nick).set(true);
+
+    // 🔄 AKTUALIZACJA CZASU AKTYWNOŚCI CO 15 SEKUND
     function updateActivity() {
       usersRef.child(nick).set({ lastActive: Date.now() });
       usersRef.child(nick).onDisconnect().remove();
@@ -206,49 +232,75 @@
     updateActivity();
     setInterval(updateActivity, 15000);
 
-    // 👥 STATUSY UŻYTKOWNIKÓW
-    usersRef.on('value', (snapshot) => {
+    // 👥 WYŚWIETLANIE LISTY UŻYTKOWNIKÓW Z KOLORAMI STATUSU
+    // Połączone online + zarejestrowani (offline)
+    function updateUserList(onlineSnapshot, registeredSnapshot) {
       userList.innerHTML = '';
       const now = Date.now();
 
-      snapshot.forEach(userSnap => {
-        const user = userSnap.key;
-        const lastActive = userSnap.val().lastActive || 0;
-        const inactiveTime = now - lastActive;
+      const onlineUsers = {};
+      onlineSnapshot.forEach(userSnap => {
+        onlineUsers[userSnap.key] = userSnap.val();
+      });
 
-        let dotColor = 'orange';
-        if (inactiveTime >= 60000) {
-          dotColor = 'red';
-        } else if (inactiveTime >= 30000) {
-          dotColor = 'blue';
+      registeredSnapshot.forEach(userSnap => {
+        const user = userSnap.key;
+        const isOnline = !!onlineUsers[user];
+        let dotColor = 'red'; // offline
+
+        if (isOnline) {
+          const lastActive = onlineUsers[user].lastActive || 0;
+          const inactiveTime = now - lastActive;
+
+          if (inactiveTime < 30000) {
+            dotColor = 'green'; // aktywny online
+          } else if (inactiveTime < 60000) {
+            dotColor = 'blue'; // online nieaktywny
+          } else {
+            dotColor = 'red'; // traktujemy jako offline po 60s nieaktywności
+          }
         }
 
         const div = document.createElement('div');
-        div.innerHTML = `<span class="dot" style="background-color:${dotColor};"></span>${user}`;
+        div.innerHTML = `<span class="dot ${dotColor}"></span>${user}`;
         userList.appendChild(div);
+      });
+    }
+
+    // Nasłuchiwanie zmian użytkowników online i zarejestrowanych
+    usersRef.on('value', onlineSnap => {
+      registeredRef.once('value').then(registeredSnap => {
+        updateUserList(onlineSnap, registeredSnap);
       });
     });
 
-    // 🚫 FRAZY ZAKAZANE
+    // ======== DODANO: LISTA ZAKAZANYCH FRAZ ========
     const bannedPhrases = [
       "https://pl.pornhub.com/",
       "pornhub.com",
       "pornhub",
-      "porn"
+      "porn",
     ];
 
-    // 📥 WYŚWIETLANIE WIADOMOŚCI
+    // 📬 ODBIÓR WIADOMOŚCI Z BLOKADĄ ZAKAZANYCH FRAZ
     messagesRef.on('child_added', (snapshot) => {
       const msg = snapshot.val();
       const key = snapshot.key;
       const textLower = msg.text.toLowerCase();
 
-      if (bannedPhrases.some(phrase => textLower.includes(phrase))) {
+      // Sprawdzenie czy wiadomość zawiera zakazane frazy
+      const containsBanned = bannedPhrases.some(phrase =>
+        textLower.includes(phrase.toLowerCase())
+      );
+
+      if (containsBanned) {
+        // Usuwamy wiadomość natychmiast z bazy
         messagesRef.child(key).remove();
         return;
       }
 
       const time = new Date(msg.timestamp).toLocaleTimeString();
+
       const msgDiv = document.createElement('div');
       msgDiv.className = 'msg';
       msgDiv.innerHTML = `[${time}] <strong>${msg.nick}</strong>: ${msg.text}`;
@@ -298,7 +350,7 @@
       });
     });
 
-    // ✉️ WYSYŁANIE WIADOMOŚCI Z DŹWIĘKIEM
+    // ✉️ WYSYŁANIE WIADOMOŚCI
     sendBtn.addEventListener('click', () => {
       const text = input.value.trim();
       if (text === '') return;
@@ -309,16 +361,60 @@
         timestamp: Date.now()
       });
 
-      document.getElementById('sendSound').play(); // 🔊 dźwięk wysłania
-
       input.value = '';
       input.focus();
+
+      // Usuń status pisania po wysłaniu
+      typingRef.child(nick).remove();
     });
 
     input.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') sendBtn.click();
     });
-  </script>
 
+    // ==== DETEKCJA PISANIA WIADOMOŚCI ====
+
+    let typingTimeout = null;
+
+    input.addEventListener('input', () => {
+      // Ustaw status, że user pisze
+      typingRef.child(nick).set(true);
+
+      // Czyść timeout
+      if (typingTimeout) clearTimeout(typingTimeout);
+
+      // Usuń status pisania po 3 sekundach bez pisania
+      typingTimeout = setTimeout(() => {
+        typingRef.child(nick).remove();
+      }, 3000);
+    });
+
+    // Wyświetlanie info kto pisze
+
+    function updateTypingIndicator(typingSnapshot) {
+      const typingUsers = [];
+      typingSnapshot.forEach(userSnap => {
+        const user = userSnap.key;
+        if (user !== nick) { // nie pokazuj info, że ja sam piszę
+          typingUsers.push(user);
+        }
+      });
+
+      if (typingUsers.length === 0) {
+        typingIndicator.style.display = 'none';
+        typingIndicator.textContent = '';
+      } else if (typingUsers.length === 1) {
+        typingIndicator.style.display = 'block';
+        typingIndicator.textContent = `${typingUsers[0]} pisze wiadomość...`;
+      } else {
+        typingIndicator.style.display = 'block';
+        typingIndicator.textContent = `${typingUsers.join(', ')} piszą wiadomość...`;
+      }
+    }
+
+    typingRef.on('value', updateTypingIndicator);
+
+  </script>
+  
 </body>
 </html>
